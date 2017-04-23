@@ -24,8 +24,12 @@ private:
 private slots:
     void digitPressed();
     void on_pushButton_decimal_released();
+    void unaryOperationPressed();
     void on_pushButton_clear_released();
+    void on_pushButton_equal_released();
+    void binaryOperationPressed();
     void on_pushButton_del_released();
+
 };
 
 #endif // CALCULATOR_H
