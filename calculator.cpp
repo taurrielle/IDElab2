@@ -50,10 +50,9 @@ Calculator::Calculator(QWidget *parent) :
     ui->pushButton_overx->setCheckable(true);
     ui->pushButton_percent->setCheckable(true);
 
-    this->setFixedSize(279,430);
+    this->setFixedSize(350,430);
 
     ui->label->setFixedWidth(281);
-
 
 }
 
@@ -119,6 +118,59 @@ void Calculator::on_pushButton_decimal_released()
     }
 }
 
+void Calculator::unaryOperationPressed()
+{
+    QPushButton * button = (QPushButton*) sender();
+    double labelNumber;
+    QString newLabel;
+    equalPressed = true;
+
+    if (button->text() == "+/-")
+    {
+        labelNumber = ui->label->text().toDouble();
+        labelNumber = labelNumber * (-1);
+        newLabel = QString::number(labelNumber, 'g', 15);
+        ui->label->setText(newLabel);
+        ui->label_3->setText(newLabel);
+    }
+
+    else if (button->text() == "%")
+    {
+        labelNumber = ui->label->text().toDouble();
+        labelNumber = labelNumber * 0.01;
+        newLabel = QString::number(labelNumber, 'g', 15);
+        ui->label->setText(newLabel);
+        ui->label_3->setText(ui->label_3->text() + "%");
+    }
+
+    else if (button->text() == "√")
+    {
+        labelNumber = ui->label->text().toDouble();
+        labelNumber = sqrt(labelNumber);
+        newLabel = QString::number(labelNumber, 'g', 15);
+        ui->label->setText(newLabel);
+        ui->label_3->setText("√" + ui->label_3->text());
+    }
+
+    else if (button->text() == "x^2")
+    {
+        labelNumber = ui->label->text().toDouble();
+        labelNumber = pow(labelNumber, 2);
+        newLabel = QString::number(labelNumber, 'g', 15);
+        ui->label->setText(newLabel);
+        ui->label_3->setText(ui->label_3->text() + " ^ 2");
+    }
+
+    else if (button->text() == "1/x")
+    {
+        labelNumber = ui->label->text().toDouble();
+        labelNumber = 1 / labelNumber;
+        newLabel = QString::number(labelNumber, 'g', 15);
+        ui->label->setText(newLabel);
+        ui->label_3->setText("1 / " + ui->label_3->text());
+    }
+}
+
 void Calculator::on_pushButton_clear_released()
 {
     ui->pushButton_add->setChecked(false);
@@ -131,13 +183,195 @@ void Calculator::on_pushButton_clear_released()
     ui->pushButton_overx->setChecked(false);
     ui->pushButton_percent->setChecked(false);
 
+    typing = false;
+
     bynary_pressed = false;
+    showPlot = false;
 
     ui->label->setText("0");
     ui->label_3->setText("0");
     firstNum = 0;
 }
 
+void Calculator::on_pushButton_equal_released()
+{
+    double labelNumber, secondNum;
+    QString newLabel;
+    equalPressed = true;
+
+    secondNum = ui->label->text().toDouble();
+
+        if (ui->pushButton_add->isChecked())
+        {
+            labelNumber = firstNum + secondNum;
+            newLabel = QString::number(labelNumber, 'g', 15);
+            ui->label->setText(newLabel);
+            ui->label_3->setText(newLabel);
+            ui->pushButton_add->setChecked(false);
+        }
+        else if (ui->pushButton_subtract->isChecked())
+        {
+            labelNumber = firstNum - secondNum;
+            newLabel = QString::number(labelNumber, 'g', 15);
+            ui->label->setText(newLabel);
+            ui->label_3->setText(newLabel);
+            ui->pushButton_subtract->setChecked(false);
+        }
+        else if (ui->pushButton_multiply->isChecked())
+        {
+            labelNumber = firstNum * secondNum;
+            newLabel = QString::number(labelNumber, 'g', 15);
+            ui->label->setText(newLabel);
+            ui->label_3->setText(newLabel);
+            ui->pushButton_multiply->setChecked(false);
+        }
+        else if (ui->pushButton_divide->isChecked())
+        {
+            labelNumber = firstNum / secondNum;
+            newLabel = QString::number(labelNumber, 'g', 15);
+            ui->label->setText(newLabel);
+            ui->label_3->setText(newLabel);
+            ui->pushButton_divide->setChecked(false);
+        }
+        else if (ui->pushButton_pow->isChecked())
+        {
+            ui->label_3->setText(ui->label->text());
+            ui->pushButton_pow->setChecked(false);
+        }
+        else if (ui->pushButton_sqrt->isChecked())
+        {
+            ui->label_3->setText(ui->label->text());
+            ui->pushButton_sqrt->setChecked(false);
+        }
+        else if (ui->pushButton_overx->isChecked())
+        {
+            ui->label_3->setText(ui->label->text());
+            ui->pushButton_overx->setChecked(false);
+        }
+        else if (ui->pushButton_percent->isChecked())
+        {
+            ui->label_3->setText(ui->label->text());
+            ui->pushButton_percent->setChecked(false);
+        }
+
+    typing = false;
+    firstNum = 0;
+    bynary_pressed = false;
+}
+
+void Calculator::binaryOperationPressed()
+{
+    QPushButton * button = (QPushButton*) sender();
+    double labelNumber, secondNum;
+    QString newLabel;
+
+    equalPressed = false;
+    if(operationPressed == true)
+    {
+        ui->pushButton_add->setChecked(false);
+        ui->pushButton_subtract->setChecked(false);
+        ui->pushButton_multiply->setChecked(false);
+        ui->pushButton_divide->setChecked(false);
+
+        ui->pushButton_pow->setChecked(false);
+        ui->pushButton_sqrt->setChecked(false);
+        ui->pushButton_overx->setChecked(false);
+        ui->pushButton_percent->setChecked(false);
+        bynary_pressed = false;
+        typing = false;
+        ui->label_3->setText(ui->label_3->text().left((ui->label_3->text().length() - 2)));
+    }
+
+    button->setChecked(true);
+    ui->label_3->setText(ui->label_3->text() + " " + button->text());
+
+    if (bynary_pressed == false)
+    {
+        firstNum = ui->label->text().toDouble();
+
+        bynary_pressed = true;
+        pending_operator = button->text();
+    }
+
+    else if (ui->pushButton_add->isChecked() && bynary_pressed && (pending_operator == "+"))
+    {
+        secondNum = ui->label->text().toDouble();
+        labelNumber = firstNum + secondNum;
+        newLabel = QString::number(labelNumber, 'g', 15);
+        ui->label->setText(newLabel);
+        firstNum = ui->label->text().toDouble();
+        pending_operator = button->text();
+    }
+    else if (ui->pushButton_subtract->isChecked() && bynary_pressed && (pending_operator == "-"))
+    {
+        secondNum = ui->label->text().toDouble();
+        labelNumber = firstNum - secondNum;
+        newLabel = QString::number(labelNumber, 'g', 15);
+        ui->label->setText(newLabel);
+        firstNum = ui->label->text().toDouble();
+        pending_operator = button->text();
+    }
+    else if (ui->pushButton_multiply->isChecked() && bynary_pressed && (pending_operator == "x"))
+    {
+        secondNum = ui->label->text().toDouble();
+        labelNumber = firstNum * secondNum;
+        newLabel = QString::number(labelNumber, 'g', 15);
+        ui->label->setText(newLabel);
+        firstNum = ui->label->text().toDouble();
+        pending_operator = button->text();
+    }
+    else if (ui->pushButton_divide->isChecked() && bynary_pressed && (pending_operator == "/"))
+    {
+        secondNum = ui->label->text().toDouble();
+        labelNumber = firstNum / secondNum;
+        newLabel = QString::number(labelNumber, 'g', 15);
+        ui->label->setText(newLabel);
+        firstNum = ui->label->text().toDouble();
+        pending_operator = button->text();
+    }
+    else if ((ui->pushButton_add->isChecked() && bynary_pressed && (pending_operator != "+")) ||
+             (ui->pushButton_subtract->isChecked() && bynary_pressed && (pending_operator != "-")) ||
+             (ui->pushButton_multiply->isChecked() && bynary_pressed && (pending_operator != "x")) ||
+             (ui->pushButton_divide->isChecked() && bynary_pressed && (pending_operator != "/")))
+    {
+        if (pending_operator == "+")
+        {
+            secondNum = ui->label->text().toDouble();
+            labelNumber = firstNum + secondNum;
+            newLabel = QString::number(labelNumber, 'g', 15);
+            ui->label->setText(newLabel);
+            firstNum = ui->label->text().toDouble();
+
+        }
+        else if (pending_operator == "-")
+        {
+            secondNum = ui->label->text().toDouble();
+            labelNumber = firstNum - secondNum;
+            newLabel = QString::number(labelNumber, 'g', 15);
+            ui->label->setText(newLabel);
+            firstNum = ui->label->text().toDouble();
+        }
+        else if (pending_operator == "*")
+        {
+            secondNum = ui->label->text().toDouble();
+            labelNumber = firstNum * secondNum;
+            newLabel = QString::number(labelNumber, 'g', 15);
+            ui->label->setText(newLabel);
+            firstNum = ui->label->text().toDouble();
+        }
+        else if (pending_operator == "/")
+        {
+            secondNum = ui->label->text().toDouble();
+            labelNumber = firstNum / secondNum;
+            newLabel = QString::number(labelNumber, 'g', 15);
+            ui->label->setText(newLabel);
+            firstNum = ui->label->text().toDouble();
+        }
+        pending_operator = button->text();
+    }
+    typing = false;
+    operationPressed = true;
+}
 
 void Calculator::on_pushButton_del_released()
 {
