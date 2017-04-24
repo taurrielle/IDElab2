@@ -50,9 +50,11 @@ Calculator::Calculator(QWidget *parent) :
     ui->pushButton_overx->setCheckable(true);
     ui->pushButton_percent->setCheckable(true);
 
-    this->setFixedSize(350,430);
+    this->setFixedSize(279,430);
 
     ui->label->setFixedWidth(281);
+    ui->qCustomPlot->hide();
+    ui->pushButton_back->hide();
 
 }
 
@@ -106,6 +108,7 @@ void Calculator::digitPressed()
     ui->label->setText(newLabel);
     operationPressed = false;
     equalPressed = false;
+    showPlot = false;
 
 }
 
@@ -200,7 +203,8 @@ void Calculator::on_pushButton_equal_released()
     equalPressed = true;
 
     secondNum = ui->label->text().toDouble();
-
+    if (showPlot == false)
+    {
         if (ui->pushButton_add->isChecked())
         {
             labelNumber = firstNum + secondNum;
@@ -253,6 +257,38 @@ void Calculator::on_pushButton_equal_released()
             ui->label_3->setText(ui->label->text());
             ui->pushButton_percent->setChecked(false);
         }
+    }
+
+    else if(showPlot == true)
+    {
+        ui->qCustomPlot->show();
+        ui->pushButton_back->show();
+        QString expr, exprTemp;
+        QVector<double> x(21), y(21);
+        expr = ui->label_3->text();
+
+        for(int i=0; i<21;i++)
+        {
+            exprTemp = expr;
+
+            int j = i - 10;
+            QString tempX = QString::number(j);;
+            exprTemp = exprTemp.replace("x", tempX);
+            QScriptEngine expression;
+            double myVal=expression.evaluate(exprTemp).toNumber();
+            x[i] = j;
+            y[i] = myVal;
+        }
+        // create graph and assign data to it:
+        ui->qCustomPlot->addGraph();
+        ui->qCustomPlot->graph(0)->setData(x, y);
+
+        // set axes ranges, so we see all data:
+        ui->qCustomPlot->xAxis->setRange(-10, 10);
+        ui->qCustomPlot->yAxis->setRange(-10, 10);
+        ui->qCustomPlot->replot();
+        showPlot = false;
+    }
 
     typing = false;
     firstNum = 0;
@@ -351,7 +387,7 @@ void Calculator::binaryOperationPressed()
             ui->label->setText(newLabel);
             firstNum = ui->label->text().toDouble();
         }
-        else if (pending_operator == "*")
+        else if (pending_operator == "x")
         {
             secondNum = ui->label->text().toDouble();
             labelNumber = firstNum * secondNum;
@@ -392,5 +428,62 @@ void Calculator::on_pushButton_del_released()
     }
 }
 
+void Calculator::on_pushButton_change_2_released()
+{
+    if(scietificButton == false)
+    {
+        this->setFixedSize(350,430);
+        ui->label->setFixedWidth(350);
+        ui->label_2->setText("Scientific");
+        ui->label_2->setFixedWidth(300);
+        ui->label_3->setFixedWidth(350);
+        ui->pushButton_equal->setFixedWidth(142);
+        scietificButton = true;
+    }
+    else if (scietificButton == true)
+    {
+        this->setFixedSize(279,430);
+        ui->label->setFixedWidth(280);
+        ui->label_2->setText("Standard");
+        ui->label_2->setFixedWidth(230);
+        ui->label_3->setFixedWidth(280);
+        ui->pushButton_equal->setFixedWidth(71);
+        scietificButton = false;
+    }
+}
 
+void Calculator::on_pushButton_function_released()
+{
+    showPlot = true;
 
+    if(bynary_pressed == true && typing == false)
+    {
+        ui->label->setText(" x");
+        ui->label_3->setText(ui->label_3->text() + " x");
+    }
+    else if(ui->label->text()[0] == "0")
+    {
+        ui->label->setText("x");
+        ui->label_3->setText("x");
+    }
+    else if(ui->label->text()[ui->label->text().length() -1] == "x")
+    {
+        ui->label->setText("x");
+        ui->label_3->setText(ui->label_3->text() + " * x");
+    }
+    else
+    {
+        ui->label->setText(ui->label->text() + "x");
+        ui->label_3->setText(ui->label_3->text() + " * x");
+    }
+}
+
+void Calculator::on_pushButton_back_released()
+{
+    if(showPlot == false)
+        {
+            ui->qCustomPlot->hide();
+            ui->pushButton_back->hide();
+        }
+    showPlot = true;
+}

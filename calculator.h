@@ -29,7 +29,9 @@ private slots:
     void on_pushButton_equal_released();
     void binaryOperationPressed();
     void on_pushButton_del_released();
-
+    void on_pushButton_change_2_released();
+    void on_pushButton_function_released();
+    void on_pushButton_back_released();
 };
 
 #endif // CALCULATOR_H
